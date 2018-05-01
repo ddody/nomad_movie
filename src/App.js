@@ -2,31 +2,50 @@ import React, { Component } from 'react';
 import './App.css';
 import Movie from './Movie'
 
-const moviesTitles = [
-  "Matrix",
-  "Full metal Jacket",
-  "Oldboy",
-  "Star Wars"
-];
-
-const movieImages = [
-  "https://ia.media-imdb.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SY1000_CR0,0,665,1000_AL_.jpg",
-  "https://ia.media-imdb.com/images/M/MV5BNzc2ZThkOGItZGY5YS00MDYwLTkyOTAtNDRmZWIwMGRhYTc0L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SY1000_CR0,0,656,1000_AL_.jpg",
-  "https://upload.wikimedia.org/wikipedia/en/6/67/Oldboykoreanposter.jpg",
-  "https://lumiere-a.akamaihd.net/v1/images/the-last-jedi-theatrical-poster-film-page_bca06283.jpeg?region=0%2C0%2C480%2C711"
-]
-
 
 
 
 class App extends Component {
+
+  state = {}
+
+  componentDidMount() {
+    this._getMovies();
+  }
+
+  _renderMovies = () => {
+    const movies = this.state.movies.map((movie) => {
+      console.log(movie);
+      return <Movie
+        title={movie.title_english}
+        poster={movie.medium_cover_image}
+        key={movie.id}
+        genres={movie.genres}
+        synopsis={movie.synopsis}
+      />
+    })
+    return movies
+  }
+
+  _getMovies = async () => {
+    const movies = await this._callApi()
+    this.setState({
+      movies
+    })
+  }
+
+  _callApi = () => {
+    return fetch('https://yts.am/api/v2/list_movies.json?sort_by=download_count')
+      .then(response => response.json())
+      .then(json => json.data.movies)
+      .catch(err => console.log(err))
+  }
+
   render() {
+    const { movies } = this.state;
     return (
-      <div className="App">
-        <Movie title={moviesTitles[0]} poster={movieImages[0]} />
-        <Movie title={moviesTitles[1]} poster={movieImages[1]} />
-        <Movie title={moviesTitles[2]} poster={movieImages[2]} />
-        <Movie title={moviesTitles[3]} poster={movieImages[3]} />
+      <div className={movies ? "App" : "App--loading"}>
+        {this.state.movies ? this._renderMovies() : 'Loading'}
       </div>
     );
   }
